@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-paper: #f4efe4;
+  --color-sheet: #fbf8f2;
+  --color-ink: #15202d;
+  --color-ink-soft: #4c5664;
+  --color-rule: #e2d8c6;
+  --color-brass: #8f6420;
+  --color-proceed: #1d6a4e;
+  --color-hold: #9a3d2c;
+
+  /* Who is talking in the hop-by-hop view: the model, and one hue per worker. */
+  --color-sea: #2f5d8a;
+  --color-umber: #8a6a3a;
+  --color-teal: #3f6b73;
+  --color-mauve: #7a4f6b;
+  --color-olive: #5b6b2f;
+}
+
+@layer base {
+  body {
+    min-height: 100vh;
+    background-color: var(--color-paper);
+    /* A warm light from the top left, over a fine paper grain. */
+    background-image:
+      radial-gradient(1100px 520px at 8% -12%, color-mix(in oklab, var(--color-brass) 9%, transparent), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.12 0 0 0 0 0.18 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-attachment: fixed;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-brass) 24%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* A panel: a lighter sheet on the paper, with a brass hairline along its top edge. */
+  .sheet {
+    position: relative;
+    background: var(--color-sheet);
+    border: 1px solid color-mix(in oklab, var(--color-rule) 85%, transparent);
+    border-radius: 20px;
+    box-shadow:
+      0 1px 0 color-mix(in oklab, var(--color-ink) 4%, transparent),
+      0 24px 48px -32px color-mix(in oklab, var(--color-ink) 30%, transparent);
+  }
+  .sheet::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--color-brass), color-mix(in oklab, var(--color-brass) 22%, transparent) 42%, transparent 82%);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  /* The agent's flow: a node per step, joined by a rail that turns solid once the step is done. */
+  .step {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding-bottom: 30px;
+  }
+  .step:last-child {
+    padding-bottom: 0;
+  }
+  .step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 30px;
+    bottom: 4px;
+    width: 2px;
+    border-radius: 2px;
+    background: repeating-linear-gradient(to bottom, var(--color-rule) 0 4px, transparent 4px 8px);
+  }
+  .step[data-state="done"]:not(:last-child)::before {
+    background: color-mix(in oklab, var(--color-ink) 28%, transparent);
+  }
+
+  .node {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-rule);
+    background: var(--color-sheet);
+    color: var(--color-sheet);
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  .node.small {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+  }
+  [data-state="running"] > .node {
+    border-color: var(--color-brass);
+    background: var(--color-brass);
+    animation: beat 1.6s ease-out infinite;
+  }
+  [data-state="done"] > .node {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+  }
+  [data-state="error"] > .node {
+    border-color: var(--color-hold);
+    background: var(--color-hold);
+  }
+
+  /* The workers fan out from the orchestrator: one bracket joins their lanes. */
+  .lanes {
+    position: relative;
+  }
+  .lanes::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    bottom: 12px;
+    width: 1.5px;
+    background: var(--color-rule);
+  }
+
+  /* A worker's report, written in Markdown. */
+  .report {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .report > * + * {
+    margin-top: 0.55em;
+  }
+  .report :is(h1, h2, h3, h4) {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .report ul {
+    list-style: disc;
+    padding-left: 1.15em;
+  }
+  .report ol {
+    list-style: decimal;
+    padding-left: 1.3em;
+  }
+  .report li + li {
+    margin-top: 0.25em;
+  }
+  .report strong {
+    font-weight: 600;
+  }
+  .report em {
+    font-style: italic;
+  }
+  .report.clamped {
+    max-height: 7.4em;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, #000 50%, transparent);
+  }
+
+  .reveal {
+    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  /* A request still waiting for the model. */
+  .waiting-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-brass);
+    animation: beat 1.6s ease-out infinite;
+  }
+}
+
+@keyframes beat {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-brass) 50%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .waiting-dot,
+  [data-state="running"] > .node {
+    animation: none;
+  }
+}

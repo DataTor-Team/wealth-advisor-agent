@@ -1,0 +1,18 @@
+server {
+    listen 8080;
+    root /usr/share/nginx/html;
+
+    # The app is a single page: any path that is not a file gets index.html.
+    location / {
+        try_files $uri /index.html;
+    }
+
+    # The agent's API, on the app's own origin so the browser needs no CORS.
+    # Unbuffered, so the agent's server-sent events reach the browser as they happen.
+    location /v1/ {
+        proxy_pass ${AGENT_URL};
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_read_timeout 300s;
+    }
+}

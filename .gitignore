@@ -1,0 +1,5 @@
+# Keys stay on the machine they were put on.
+anthropickey.md
+*.key
+.env
+.DS_Store

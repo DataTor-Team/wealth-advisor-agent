@@ -1,0 +1,6 @@
+# The image needs only these; anything else in this folder stays out of the build context.
+*
+!requirements.txt
+!agent.py
+!hops.py
+!main.py

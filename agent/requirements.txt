@@ -1,0 +1,9 @@
+langgraph~=1.2
+langchain-openai~=1.7
+fastapi~=0.159
+uvicorn~=0.54
+# OpenTelemetry for FastAPI and the httpx calls to the model router, released together, so pinned exactly.
+opentelemetry-distro==0.66b1
+opentelemetry-exporter-otlp==1.45.1
+opentelemetry-instrumentation-fastapi==0.66b1
+opentelemetry-instrumentation-httpx==0.66b1
